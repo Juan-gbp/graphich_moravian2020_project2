@@ -418,12 +418,11 @@ function onClick(e) {
                 
                 
             //save piece index and owner
-            gl.last_clicked_piece = [i, gl.current_player];
+            gl.last_clicked_piece = i;
             // Get valid positions
             gl.potential_squares = get_potential_squares(x_coord, y_coord, gl.current_player, active_player_pieces,
                 inactive_player_pieces, active_player_pieces[i][2]);
-
-
+            
 
             //draw a piece for each potential move in potential_squares
             for(let j = 0; j < gl.potential_squares.length; j++) {
@@ -448,12 +447,14 @@ function onClick(e) {
                 gl.bindVertexArray(gl.circleVAO);
 
                 //update the index of the recently move piece
-                let new_index = gl.last_clicked_piece[0];
+                let new_index = gl.last_clicked_piece;
                 active_player_pieces[new_index] = [gl.potential_squares[i][0], gl.potential_squares[i][1]];
+
+                //if piece jump remove rivals piece
                 if(gl.potential_squares[i][2] === true) {
                     
                     for(let j = 0; j < inactive_player_pieces.length; j++) {
-                        if(inactive_player_pieces[j][0] === gl.potential_squares[i][3][0] && inactive_player_pieces[j][0] === gl.potential_squares[i][3][0]) {
+                        if(inactive_player_pieces[j][0] === gl.potential_squares[i][3][0] && inactive_player_pieces[j][1] === gl.potential_squares[i][3][1]) {
                             inactive_player_pieces.splice(j, 1);
                         }
                     }
@@ -642,12 +643,12 @@ function get_potential_squares(x, y, current_player, turn_pieces_positions, oppo
 
                         if(square_free(opponent_pieces_positions, new_x, new_y)) {
                             //case: first diagonal space is free,
-                            //in adition to the coords, pass a bolean(has_to_jump), and if any rival relevant coord
+                            //in adition to the coords, pass a bolean(has_to_jump), and ,if any rival, relevant rival coords
                             potential_squares.push([new_x, new_y, false, []]);
                         
                         } else {
 
-                            if( current_piece_x_pos + 2 * positive_displacement <= upper_bound) {
+                            if( current_piece_x_pos + 2 * negative_displacement <= upper_bound) {
 
                                 if(current_piece_y_pos + 2 *  positive_displacement <= upper_bound) {
 
@@ -657,7 +658,8 @@ function get_potential_squares(x, y, current_player, turn_pieces_positions, oppo
                                     if(square_free(opponent_pieces_positions, new_x, new_y)) {
 
                                         //case: first diagonal space is ocupied by rival, and second digonal space is free
-                                        potential_squares.push([new_x, new_y, true, [x + negative_displacement,y + positive_displacement]])
+                                        //in adition to the coords, pass a bolean(has_to_jump), and ,if any rival, relevant rival coords
+                                        potential_squares.push([new_x, new_y, true, [x + negative_displacement, y + positive_displacement]]);
 
                                     }
                                 }
@@ -670,7 +672,7 @@ function get_potential_squares(x, y, current_player, turn_pieces_positions, oppo
 
                 }
 
-                //case: current player is white
+            //case: current player is white
             } else if(current_piece_y_pos + negative_displacement >= lower_bound) {
                 new_y = y + negative_displacement;
 
